@@ -1,9 +1,30 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getProfile } from '../../services/profileService';
 
 function DeveloperDashboard() {
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [profileCompletion, setProfileCompletion] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProfileCompletion();
+  }, []);
+
+  const fetchProfileCompletion = async () => {
+    try {
+      const data = await getProfile();
+      setProfileCompletion(data.profile.profileCompletion || 0);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -52,10 +73,15 @@ function DeveloperDashboard() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-400">Progress</span>
-                  <span className="text-blue-400 font-medium">45%</span>
+                  <span className="text-blue-400 font-medium">
+                    {loading ? '...' : `${profileCompletion}%`}
+                  </span>
                 </div>
                 <div className="w-full bg-slate-700 rounded-full h-2">
-                  <div className="bg-blue-500 h-2 rounded-full" style={{width: '45%'}}></div>
+                  <div 
+                    className="bg-blue-500 h-2 rounded-full transition-all" 
+                    style={{width: `${profileCompletion}%`}}
+                  ></div>
                 </div>
                 <p className="text-xs text-slate-500 mt-2">
                   Complete your profile to increase visibility
@@ -95,7 +121,7 @@ function DeveloperDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Button 
               className="bg-blue-600 hover:bg-blue-700 h-auto py-4"
-              disabled
+              onClick={() => navigate('/developer/profile')}
             >
               <div className="text-left w-full">
                 <p className="font-semibold">Complete Your Profile</p>
