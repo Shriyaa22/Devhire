@@ -9,10 +9,12 @@ function ExperienceForm({ onAdd, onCancel }) {
   const [formData, setFormData] = useState({
     company: '',
     position: '',
+    location: '',
     startDate: '',
     endDate: '',
     current: false,
-    description: ''
+    description: '',
+    technologies: ''
   });
 
   const [errors, setErrors] = useState({});
@@ -39,6 +41,11 @@ function ExperienceForm({ onAdd, onCancel }) {
     if (!formData.current && !formData.endDate) {
       newErrors.endDate = 'End date is required (or check "Current")';
     }
+    if (formData.startDate && formData.endDate && !formData.current) {
+      if (formData.startDate > formData.endDate) {
+        newErrors.endDate = 'End date cannot be before start date';
+      }
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -48,7 +55,11 @@ function ExperienceForm({ onAdd, onCancel }) {
     e.preventDefault();
     
     if (validate()) {
-      onAdd(formData);
+      const experienceData = {
+        ...formData,
+        technologies: formData.technologies.split(',').map(t => t.trim()).filter(Boolean)
+      };
+      onAdd(experienceData);
       // Reset form
       setFormData({
         company: '',
@@ -56,7 +67,9 @@ function ExperienceForm({ onAdd, onCancel }) {
         startDate: '',
         endDate: '',
         current: false,
-        description: ''
+        description: '',
+        technologies: '',
+        location: ''
       });
     }
   };
@@ -90,6 +103,17 @@ function ExperienceForm({ onAdd, onCancel }) {
               className="bg-slate-800 border-slate-700 text-white"
             />
             {errors.position && <p className="text-red-400 text-xs mt-1">{errors.position}</p>}
+          </div>
+
+          <div>
+            <Label className="text-slate-300">Location</Label>
+            <Input
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+              placeholder="e.g., San Francisco, CA or Remote"
+              className="bg-slate-800 border-slate-700 text-white"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -129,6 +153,17 @@ function ExperienceForm({ onAdd, onCancel }) {
               className="w-4 h-4 text-blue-600 bg-slate-800 border-slate-700 rounded"
             />
             <Label htmlFor="current" className="text-slate-300">I currently work here</Label>
+          </div>
+
+          <div>
+            <Label className="text-slate-300">Technologies Used</Label>
+            <Input
+              name="technologies"
+              value={formData.technologies}
+              onChange={handleChange}
+              placeholder="e.g., React, Node.js, AWS (comma separated)"
+              className="bg-slate-800 border-slate-700 text-white"
+            />
           </div>
 
           <div>
